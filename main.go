@@ -65,7 +65,17 @@ func readCSVFile(fileName string) {
 	}
 }
 
-func writeToFile(fileName string, rowData []string) {
+func prepend(slice, values []string) []string {
+	newSlice := make([]string, len(slice)+len(values))
+
+	copy(newSlice, values)
+	// copies from where newSlice ended to end, effectively appends
+	copy(newSlice[len(values):], slice)
+
+	return newSlice
+}
+
+func writeOneRowToFile(fileName string, rowData []string) {
 	err := os.Chmod(fileName, 0666)
 	if err != nil {
 		log.Fatalf("Failed to change file permissions: %s", err)
@@ -76,9 +86,27 @@ func writeToFile(fileName string, rowData []string) {
 		fmt.Print("Error opening file: ", err)
 	}
 
+	// Read file to get last ID
+	reader := csv.NewReader(file)
+	records, err := reader.ReadAll()
+	if err != nil {
+		fmt.Println("Error reading from your CSV file: ", err)
+		return
+	}
+
+	lastRecordId := []string{}
+
+	if len(records) == 1 {
+		lastRecordId = append(lastRecordId, "1")
+	} else {
+		lastRecordIdString := string(records[len(records)-1][0])
+		lastRecordId = append(lastRecordId, lastRecordIdString)
+	}
+	finalRowData := prepend(rowData, lastRecordId)
+
 	writer := csv.NewWriter(file)
 
-	writer.Write(rowData)
+	writer.Write(finalRowData)
 
 	writer.Flush() // Write buffered data to file
 
@@ -93,7 +121,7 @@ func writeToFile(fileName string, rowData []string) {
 func main() {
 	readCSVFile("todos.csv")
 	rowData := []string{"2", "Change my engine oil", "2/2/2024", "no", "null"}
-	writeToFile("todos.csv", rowData)
+	writeOneRowToFile("todos.csv", rowData)
 	readCSVFile("todos.csv")
 	// cmd.Execute()
 }
