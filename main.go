@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+
+	"text/tabwriter"
 )
 
 // readFile reads the contents of a file specified by filename and returns it as a string.
@@ -45,8 +47,21 @@ func readCSVFile(fileName string) {
 	}
 
 	fmt.Println("----------------------- File: ", fileName, " ---------------------------------------- ")
+
+	// Instantializes a new tabwriter
+	writer := tabwriter.NewWriter(os.Stdout, 0, 8, 2, ' ', 0)
+	defer writer.Flush()
+
+	for i, record := range records {
+		for _, column := range record {
+			fmt.Println(column)
+		}
+		fmt.Println("----------- Record ", i+1, "----------------")
+	}
+
 	for i := 0; i < len(records); i++ {
-		fmt.Println("Column: ", records[i])
+		fmt.Fprintln(writer, records[i])
+		// fmt.Println("Column: ", records[i])
 	}
 }
 
@@ -56,11 +71,10 @@ func writeToFile(fileName string, rowData []string) {
 		log.Fatalf("Failed to change file permissions: %s", err)
 	}
 
-	file, err := os.Open(fileName)
+	file, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
 		fmt.Print("Error opening file: ", err)
 	}
-	defer file.Close()
 
 	writer := csv.NewWriter(file)
 
@@ -73,12 +87,13 @@ func writeToFile(fileName string, rowData []string) {
 	}
 
 	log.Printf("written record successfully: %v,", rowData)
+	file.Close()
 }
 
 func main() {
 	readCSVFile("todos.csv")
 	rowData := []string{"2", "Change my engine oil", "2/2/2024", "no", "null"}
 	writeToFile("todos.csv", rowData)
-	// readCSVFile("todos.csv")
+	readCSVFile("todos.csv")
 	// cmd.Execute()
 }
