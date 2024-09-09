@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 
 	"text/tabwriter"
 )
@@ -53,10 +54,11 @@ func readCSVFile(fileName string) {
 	defer writer.Flush()
 
 	for i, record := range records {
+		fmt.Println("----------- Record ", i+1, "----------------")
 		for _, column := range record {
 			fmt.Println(column)
 		}
-		fmt.Println("----------- Record ", i+1, "----------------")
+
 	}
 
 	for i := 0; i < len(records); i++ {
@@ -65,23 +67,13 @@ func readCSVFile(fileName string) {
 	}
 }
 
-func prepend(slice, values []string) []string {
-	newSlice := make([]string, len(slice)+len(values))
-
-	copy(newSlice, values)
-	// copies from where newSlice ended to end, effectively appends
-	copy(newSlice[len(values):], slice)
-
-	return newSlice
-}
-
 func writeOneRowToFile(fileName string, rowData []string) {
 	err := os.Chmod(fileName, 0666)
 	if err != nil {
 		log.Fatalf("Failed to change file permissions: %s", err)
 	}
 
-	file, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	file, err := os.OpenFile(fileName, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0666)
 	if err != nil {
 		fmt.Print("Error opening file: ", err)
 	}
@@ -90,19 +82,26 @@ func writeOneRowToFile(fileName string, rowData []string) {
 	reader := csv.NewReader(file)
 	records, err := reader.ReadAll()
 	if err != nil {
-		fmt.Println("Error reading from your CSV file: ", err)
+		fmt.Println("Error reading from your CSV file in write function: ", err)
 		return
 	}
 
-	lastRecordId := []string{}
+	nextRecordId := []string{}
 
 	if len(records) == 1 {
-		lastRecordId = append(lastRecordId, "1")
+		// 1 means only headers row exists
+		nextRecordId = append(nextRecordId, "1")
 	} else {
-		lastRecordIdString := string(records[len(records)-1][0])
-		lastRecordId = append(lastRecordId, lastRecordIdString)
+		nextRecordIdInt, err := strconv.Atoi(records[len(records)-1][0])
+		log.Println("Next ID: ", nextRecordIdInt, " Record: ", records[len(records)-1][0])
+		if err != nil {
+			log.Fatalf("Error converting string to int in writeOneRowToFile function: %s", err)
+		}
+
+		nextRecordId = append(nextRecordId, strconv.Itoa(nextRecordIdInt+1))
+		fmt.Println("Next record ID:", nextRecordId, nextRecordIdInt+1)
 	}
-	finalRowData := prepend(rowData, lastRecordId)
+	finalRowData := Prepend(rowData, nextRecordId)
 
 	writer := csv.NewWriter(file)
 
@@ -120,7 +119,7 @@ func writeOneRowToFile(fileName string, rowData []string) {
 
 func main() {
 	readCSVFile("todos.csv")
-	rowData := []string{"2", "Change my engine oil", "2/2/2024", "no", "null"}
+	rowData := []string{"Change my engine oil", "2/2/2024", "no", "null"}
 	writeOneRowToFile("todos.csv", rowData)
 	readCSVFile("todos.csv")
 	// cmd.Execute()

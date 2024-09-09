@@ -14,12 +14,12 @@ package main
 //	sliceA := []string {"B","C","D"}
 //	sliceB := []string {"A"}
 //	combinedSlice := prepend(sliceA, sliceB)
-// func prepend(slice, values []string) []string {
-// 	newSlice := make([]string, len(slice)+len(values))
+func Prepend(slice, values []string) []string {
+	newSlice := make([]string, len(slice)+len(values))
 
-// 	copy(newSlice, values)
-// 	// copies from where newSlice ended to end, effectively appends
-// 	copy(newSlice[len(values):], slice)
+	copy(newSlice, values)
+	// copies from where newSlice ended to end, effectively appends
+	copy(newSlice[len(values):], slice)
 
-// 	return newSlice
-// }
+	return newSlice
+}
