@@ -6,6 +6,7 @@ package main
 import (
 	"encoding/csv"
 	"fmt"
+	"log"
 	"os"
 )
 
@@ -43,23 +44,41 @@ func readCSVFile(fileName string) {
 		return
 	}
 
+	fmt.Println("----------------------- File: ", fileName, " ---------------------------------------- ")
 	for i := 0; i < len(records); i++ {
 		fmt.Println("Column: ", records[i])
 	}
 }
 
 func writeToFile(fileName string, rowData []string) {
+	err := os.Chmod(fileName, 0666)
+	if err != nil {
+		log.Fatalf("Failed to change file permissions: %s", err)
+	}
+
 	file, err := os.Open(fileName)
 	if err != nil {
 		fmt.Print("Error opening file: ", err)
 	}
+	defer file.Close()
 
 	writer := csv.NewWriter(file)
 
-	writer.Write()
+	writer.Write(rowData)
+
+	writer.Flush() // Write buffered data to file
+
+	if err := writer.Error(); err != nil {
+		log.Fatalf("error flushing data to file: %s", err)
+	}
+
+	log.Printf("written record successfully: %v,", rowData)
 }
 
 func main() {
 	readCSVFile("todos.csv")
+	rowData := []string{"2", "Change my engine oil", "2/2/2024", "no", "null"}
+	writeToFile("todos.csv", rowData)
+	// readCSVFile("todos.csv")
 	// cmd.Execute()
 }
