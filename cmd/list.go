@@ -4,8 +4,8 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
-
+	"github.com/elishambadi/cli-todo-go/constants"
+	util "github.com/elishambadi/cli-todo-go/file_utils"
 	"github.com/spf13/cobra"
 )
 
@@ -19,10 +19,17 @@ and usage of using your command. For example:
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
+	Args: cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("list called")
+		// fmt.Println("list called")
+
+		storage_file := constants.STORAGE_FILE
+
+		util.ReadCSVFile(storage_file, completeFlag)
 	},
 }
+
+var completeFlag bool
 
 func init() {
 	rootCmd.AddCommand(listCmd)
@@ -36,4 +43,5 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// listCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	listCmd.Flags().BoolVarP(&completeFlag, "completed", "c", false, "select only completed tasks")
 }

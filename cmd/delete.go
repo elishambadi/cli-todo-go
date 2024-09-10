@@ -5,22 +5,32 @@ package cmd
 
 import (
 	"fmt"
+	"strconv"
 
+	"github.com/elishambadi/cli-todo-go/constants"
+	util "github.com/elishambadi/cli-todo-go/file_utils"
 	"github.com/spf13/cobra"
 )
 
 // deleteCmd represents the delete command
 var deleteCmd = &cobra.Command{
-	Use:   "delete",
+	Use:   "delete [id]",
 	Short: "Delete a ToDo",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Long:  `Deletes a task based on the ID provided.`,
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("delete called")
+
+		rowToDeleteId, err := strconv.Atoi(args[0])
+		if err != nil {
+			fmt.Println("Error converting id to string")
+			return
+		}
+
+		deleteError := util.DeleteRow(constants.STORAGE_FILE, rowToDeleteId)
+		if deleteError != nil {
+			fmt.Println(deleteError)
+		}
 	},
 }
 
