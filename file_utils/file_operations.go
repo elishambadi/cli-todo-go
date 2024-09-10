@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"text/tabwriter"
+	"time"
 
 	tablewriter "github.com/olekukonko/tablewriter"
 )
@@ -68,6 +69,18 @@ func ReadCSVFile(fileName string, completedOnly bool) {
 }
 
 func WriteOneRowToFile(fileName string, rowData []string) {
+	// Format 2nd param to date object
+	dateFormat := "02-01-2006"
+	inputDate := rowData[1]
+
+	parsedDate, err1 := time.Parse(dateFormat, inputDate)
+	if err1 != nil {
+		fmt.Println("Please input the right date format {DD-MM-YYYY}.")
+		return
+	}
+
+	rowData[1] = parsedDate.Format("Jan 02, 2006")
+
 	err := os.Chmod(fileName, 0666)
 	if err != nil {
 		log.Fatalf("Failed to change file permissions: %s", err)
@@ -76,6 +89,7 @@ func WriteOneRowToFile(fileName string, rowData []string) {
 	file, err := os.OpenFile(fileName, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0666)
 	if err != nil {
 		fmt.Print("Error opening file: ", err)
+		return
 	}
 
 	// Read file to get last ID

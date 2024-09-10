@@ -1,2 +1,5 @@
 id,task,due date,completed,user_id
-1,Make complete work in this app,9/10/2024,✔️,null
+1,Build a rocketship,"Oct 22, 2025",❌,null
+2,Take the kids to the beach,"Oct 22, 2025",❌,null
+3,Finish building the treehouse,"Dec 10, 2024",❌,null
+4,Hold a video call for the whole family,"Oct 09, 2024",✔️,null
