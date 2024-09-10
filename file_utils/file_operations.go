@@ -135,8 +135,11 @@ func DeleteRow(fileName string, rowId int) error {
 		return fmt.Errorf("error reading from file: %s", err)
 	}
 
-	updatedRecords := [][]string{}
+	updatedRecords := [][]string{
+		{"id", "task", "due date", "completed", "user_id"},
+	}
 
+	recordFound := false
 	for _, record := range records[1:] {
 		if len(record) == 0 {
 			continue
@@ -148,11 +151,18 @@ func DeleteRow(fileName string, rowId int) error {
 		}
 
 		if recordInt == rowId {
+			recordFound = true
 			continue // moves to next iter
 		}
 
 		updatedRecords = append(updatedRecords, record)
 	}
+
+	if !recordFound {
+		ReadCSVFile(fileName, false)
+		return fmt.Errorf("\n-no record found with the given id %d", rowId)
+	}
+
 	file.Close()
 
 	updatedFile, err := os.Create(fileName)
@@ -167,7 +177,7 @@ func DeleteRow(fileName string, rowId int) error {
 		return fmt.Errorf("error writing updated records to file: %s", writeError)
 	}
 
-	fmt.Println("Task ", records[rowId-1][1], " deleted successfully.")
+	fmt.Println("Task deleted successfully.")
 
 	ReadCSVFile(fileName, false)
 
