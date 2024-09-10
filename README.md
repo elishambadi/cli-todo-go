@@ -2,6 +2,7 @@
 This is a 3-day project for Go Todo App running on the [spf13/cobracli](https://github.com/spf13/cobra). It allows you to keep all your tasks in check, and keeps you productive.
 
 ![Todo CLI Image](screenshot.png)
+
 *A screenshot of the TodoCLI in operation*
 
 To get started, clone this repo and run the command in the root directory:
