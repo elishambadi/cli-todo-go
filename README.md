@@ -1,5 +1,5 @@
 # A ToDo CLI App powered by CobraCLI
-This is a 3-day project for Go Todo App running on the [spf13/cobracli](https://github.com/spf13/cobra). It allows you to keep all your tasks in check, and keeps you productive.
+This is a 3-day project for Go Todo App running on the [spf13/cobracli](https://github.com/spf13/cobra). It allows you to keep all your tasks in check, and keeps you productive. The table display is powered by [olekukonko/tablewriter](https://github.com/olekukonko/tablewriter) package.
 
 ![Todo CLI Image](screenshot.png)
 
