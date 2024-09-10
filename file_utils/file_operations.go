@@ -7,6 +7,8 @@ import (
 	"os"
 	"strconv"
 	"text/tabwriter"
+
+	tablewriter "github.com/olekukonko/tablewriter"
 )
 
 // readCSVFile reads the contents of a file specified by filename and returns it as a string.
@@ -42,15 +44,16 @@ func ReadCSVFile(fileName string, completedOnly bool) {
 		return
 	}
 
-	fmt.Println("------------------- Your Tasks -------------------- ")
+	fmt.Println("------------------- Your Tasks -------------------- \n")
 
 	// Instantializes a new tabwriter
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader(records[0])
+
 	writer := tabwriter.NewWriter(os.Stdout, 0, 8, 2, ' ', 0)
 	defer writer.Flush()
 
-	for _, record := range records {
-		tabbedString := ""
-
+	for _, record := range records[1:] {
 		// Check only for completed tasks.
 		if completedOnly {
 			if record[3] == "no" {
@@ -58,12 +61,10 @@ func ReadCSVFile(fileName string, completedOnly bool) {
 			}
 		}
 
-		for _, column := range record {
-			// fmt.Println(column)
-			tabbedString += column + "\t"
-		}
-		fmt.Fprintln(writer, tabbedString)
+		table.Append(record)
 	}
+
+	table.Render() // Displays the table
 }
 
 func WriteOneRowToFile(fileName string, rowData []string) {
@@ -103,7 +104,7 @@ func WriteOneRowToFile(fileName string, rowData []string) {
 
 	// Padd the remaining tasks if the len is too small
 	if len(finalRowData) == 3 {
-		paddingRecords := []string{"no", "null"}
+		paddingRecords := []string{"❌", "null"}
 		finalRowData = append(finalRowData, paddingRecords...)
 	}
 
@@ -119,6 +120,68 @@ func WriteOneRowToFile(fileName string, rowData []string) {
 
 	fmt.Printf("Created a task \"%s\" successfully. Due on %s. \n\nCall 'list' command to view all tasks.\n", finalRowData[1], finalRowData[2])
 	file.Close()
+}
+
+func MarkAsComplete(fileName string, rowId int) error {
+	file, err := os.OpenFile(fileName, os.O_RDWR, 0666)
+	if err != nil {
+		return fmt.Errorf("error opening file: %s", err)
+	}
+
+	reader := csv.NewReader(file)
+
+	records, err := reader.ReadAll()
+	if err != nil {
+		return fmt.Errorf("error reading from file: %s", err)
+	}
+
+	updatedRecords := [][]string{
+		{"id", "task", "due date", "completed", "user_id"},
+	}
+
+	recordFound := false
+	for _, record := range records[1:] {
+		if len(record) == 0 {
+			continue
+		}
+
+		recordInt, err := strconv.Atoi(record[0])
+		if err != nil {
+			return fmt.Errorf("error converting recordId to string: %s", err)
+		}
+
+		if recordInt == rowId {
+			record[3] = "✔️" // mark as complete
+			recordFound = true
+		}
+
+		updatedRecords = append(updatedRecords, record)
+	}
+
+	if !recordFound {
+		ReadCSVFile(fileName, false)
+		return fmt.Errorf("\n-no record found with the given id %d", rowId)
+	}
+
+	file.Close()
+
+	updatedFile, err := os.Create(fileName)
+	if err != nil {
+		return fmt.Errorf("error creating a new file for writing: %s", err)
+	}
+
+	//Write the updated records to file
+	writer := csv.NewWriter(updatedFile)
+
+	if writeError := writer.WriteAll(updatedRecords); writeError != nil {
+		return fmt.Errorf("error writing updated records to file: %s", writeError)
+	}
+
+	fmt.Println("Task completed Successfully successfully! +1 Karma. ")
+
+	ReadCSVFile(fileName, false)
+
+	return nil
 }
 
 func DeleteRow(fileName string, rowId int) error {

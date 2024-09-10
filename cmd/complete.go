@@ -5,22 +5,32 @@ package cmd
 
 import (
 	"fmt"
+	"strconv"
 
+	"github.com/elishambadi/cli-todo-go/constants"
+	util "github.com/elishambadi/cli-todo-go/file_utils"
 	"github.com/spf13/cobra"
 )
 
 // completeCmd represents the complete command
 var completeCmd = &cobra.Command{
-	Use:   "complete",
+	Use:   "complete [id]",
 	Short: "Mark a ToDo as complete",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Args:  cobra.ExactArgs(1),
+	Long: `Mark a task as complete.
+	
+	Provide the id as a param to declare that you have completed the task.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("complete called")
+		taskToCompleteId, err := strconv.Atoi(args[0])
+		if err != nil {
+			fmt.Println("Error converting id to string")
+			return
+		}
+
+		completeError := util.MarkAsComplete(constants.STORAGE_FILE, taskToCompleteId)
+		if completeError != nil {
+			fmt.Println(completeError)
+		}
 	},
 }
 

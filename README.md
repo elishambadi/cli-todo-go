@@ -25,6 +25,8 @@ Those will allow you to manage your tasks.
 Todo for the todo:
 - [x] Build the core app
 - [ ] migrate store from file to db
+- [ ] add input validation
+- [ ] add date formatting
 - [ ] write go tests
 - [ ] make the cli interactive
 
