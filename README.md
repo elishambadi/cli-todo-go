@@ -9,8 +9,10 @@ go build
 ```
 
 That should get you started and display the main application menu.
+
 ---
-###Commands
+
+### Commands
 Typical usage is `./cli-todo-go [command]`
 Commands include:
 - list: to list all your tasks
@@ -22,10 +24,10 @@ Those will allow you to manage your tasks.
 
 Todo for the todo:
 - [x] Build the core app
-- [] migrate store from file to db
-- [] write go tests
-- [] make the cli interactive
+- [ ] migrate store from file to db
+- [ ] write go tests
+- [ ] make the cli interactive
 
 Keep your tasks nice and done, as they should be.
 
-- *CLI applications are great for building internal tools to streamline workflows, and for application SDKs as well.*
+*CLI applications are great for building internal tools to streamline workflows, and for application SDKs as well.*
