@@ -45,7 +45,10 @@ func ReadCSVFile(fileName string, completedOnly bool) {
 		return
 	}
 
-	fmt.Println("------------------- Your Tasks -------------------- \n")
+	if len(records) == 1 {
+		fmt.Println("Woohoo! You have no tasks\n\nRun: ./cli-todo-go create [task_description] [end-date {DD-MM-YYYY}].\n")
+		return
+	}
 
 	// Instantializes a new tabwriter
 	table := tablewriter.NewWriter(os.Stdout)
@@ -57,7 +60,7 @@ func ReadCSVFile(fileName string, completedOnly bool) {
 	for _, record := range records[1:] {
 		// Check only for completed tasks.
 		if completedOnly {
-			if record[3] == "no" {
+			if record[4] == "❌" {
 				continue
 			}
 		}
@@ -81,6 +84,15 @@ func WriteOneRowToFile(fileName string, rowData []string) {
 
 	rowData[1] = parsedDate.Format("Jan 02, 2006")
 
+	// Append createdAt & time validation
+	createdAt := time.Now().Format("Jan 02, 2006")
+	if parsedDate.Unix() < time.Now().Unix() {
+		fmt.Printf("\nYou cannot create a task in the past on %s. Today is %s\n\n", rowData[1], createdAt)
+		return
+	}
+	rowData = append(rowData, createdAt)
+
+	// ----- File opening ----
 	err := os.Chmod(fileName, 0666)
 	if err != nil {
 		log.Fatalf("Failed to change file permissions: %s", err)
@@ -92,7 +104,7 @@ func WriteOneRowToFile(fileName string, rowData []string) {
 		return
 	}
 
-	// Read file to get last ID
+	// ---- Read file to get last ID ----
 	reader := csv.NewReader(file)
 	records, err := reader.ReadAll()
 	if err != nil {
@@ -117,7 +129,7 @@ func WriteOneRowToFile(fileName string, rowData []string) {
 	finalRowData := Prepend(rowData, nextRecordId)
 
 	// Padd the remaining tasks if the len is too small
-	if len(finalRowData) == 3 {
+	if len(finalRowData) == 4 {
 		paddingRecords := []string{"❌", "null"}
 		finalRowData = append(finalRowData, paddingRecords...)
 	}
@@ -150,7 +162,7 @@ func MarkAsComplete(fileName string, rowId int) error {
 	}
 
 	updatedRecords := [][]string{
-		{"id", "task", "due date", "completed", "user_id"},
+		{"id", "task", "created at", "due date", "completed", "user_id"},
 	}
 
 	recordFound := false
@@ -165,7 +177,7 @@ func MarkAsComplete(fileName string, rowId int) error {
 		}
 
 		if recordInt == rowId {
-			record[3] = "✔️" // mark as complete
+			record[4] = "✔️" // mark as complete
 			recordFound = true
 		}
 
@@ -213,7 +225,7 @@ func DeleteRow(fileName string, rowId int) error {
 	}
 
 	updatedRecords := [][]string{
-		{"id", "task", "due date", "completed", "user_id"},
+		{"id", "task", "created_at", "due date", "completed", "user_id"},
 	}
 
 	recordFound := false
